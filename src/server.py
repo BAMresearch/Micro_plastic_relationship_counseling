@@ -55,29 +55,28 @@ def errors_in_log_file(server_data: ServerData):
 
 
 async def serve(websocket, path, server_data):
-    """Runs one server side task cycle."""
-    # Receive a message from the client
-    received_message = await websocket.recv()
+    """Runs an async loop of server side tasks."""
 
-    # Shut down the script if the client has acknowledged that it has received the error message 
-    if received_message == "Error successfully detected!":
-        asyncio.get_event_loop().stop()
-    
-    # Check for error(s) in log file
-    errors = errors_in_log_file(server_data)
+    async for received_message in websocket:
+        # Shut down the script if the client has acknowledged that it has received the error message 
+        if received_message == "STATUS CLIENT: Error successfully detected!":
+            asyncio.get_event_loop().stop()
+        
+        # Check for error(s) in log file
+        errors = errors_in_log_file(server_data)
 
-    # Determine an appropriate response to be sent to the client
-    # Response depends on whether an error has been found or not
-    if errors:
-        response_message = "STATUS: Error detected"
-    else:
-        response_message = "STATUS: Ok"
+        # Determine an appropriate response to be sent to the client
+        # Response depends on whether an error has been found or not
+        if errors:
+            response_message = "STATUS SERVER: Error detected"
+        else:
+            response_message = "STATUS SERVER: Ok"
 
-    # Send the response to the client
-    await websocket.send(response_message)
+        # Send the response to the client
+        await websocket.send(response_message)
 
-    # Wait some time before repeating the cycle
-    time.sleep(server_data.delay)
+        # Wait some time before repeating the cycle
+        time.sleep(server_data.delay)
 
 
 def main():
