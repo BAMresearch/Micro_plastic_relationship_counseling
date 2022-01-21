@@ -18,7 +18,7 @@ class ServerData:
 
         # Ip address and port used to communicate with client
         self.ip_address = config['IP']['ip_address']
-        self.port = config['IP']['port']
+        self.port = int(config['IP']['port'])
 
         # Name of the log file
         self.log_file_name = config['LOG_FILE']['log_file_name']

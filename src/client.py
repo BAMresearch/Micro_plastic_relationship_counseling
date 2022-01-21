@@ -63,7 +63,7 @@ class UserWebsocketEngine:
             ws.send(response_message)
 
         # Initialize Websocket App
-        url_address = f'ws://{self.client_data.ip_address}:{str(self.client_data.port)}'
+        url_address = f'ws://{self.client_data.ip_address}:{self.client_data.port}'
         ws = websocket.WebSocketApp(url_address,
                                     on_message=on_message,
                                     on_error=on_error,
