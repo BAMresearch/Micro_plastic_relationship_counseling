@@ -6,10 +6,11 @@ import configparser
 import os
 import time
 import functools
+import glob
 
 class ServerData:
 
-    def __init__(self):
+    def __init__(self, log_file_automatic=True):
         """Initializes the server data."""
         # Set up the ConfigParser. Used to read all the server data from the config.ini file
         config = configparser.ConfigParser()
@@ -21,7 +22,14 @@ class ServerData:
 
         # Name of the log file
         self.log_file_path = config['LOG_FILE']['log_file_path']
-        self.log_file_name = config['LOG_FILE']['log_file_name']
+        if log_file_automatic: # Automatically find and use the latest log file created in this directory
+            try:
+                log_files = glob.glob(f"{self.log_file_path}/*.log")
+                self.log_file_name = os.path.basename(max(log_files, key=os.path.getctime))
+            except ValueError:
+                print("No log file found in the specified directory.")
+        else: # Use the log file specified in the config.ini file
+            self.log_file_name = config['LOG_FILE']['log_file_name']
 
         # Trigger words that are used to determine whether an error has occured
         self.triggers = config.get('TRIGGER_WORDS', 'triggers').split(',')
@@ -39,8 +47,7 @@ def errors_in_log_file(server_data: ServerData):
     """
 
     # Open the log file and create a list that contains all lines as strings
-    file_path = os.path.abspath('')
-    with open(file_path + f"{server_data.log_file_path}/{server_data.log_file_name}", "r") as f:
+    with open(f"{server_data.log_file_path}/{server_data.log_file_name}", "r") as f:
         lines = f.readlines()
     
     # Search all lines for errors
@@ -82,7 +89,7 @@ async def serve(websocket, path, server_data: ServerData):
 def main():
     """Initializes and runs the server."""
     # Initialize the server data
-    server_data = ServerData()
+    server_data = ServerData(log_file_automatic=True)
 
     # Start the server
     start_server = websockets.serve(functools.partial(serve, path="Whatever", server_data=server_data), host=server_data.ip_address, port=server_data.port)
