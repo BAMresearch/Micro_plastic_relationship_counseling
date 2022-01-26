@@ -13,3 +13,4 @@ websocket
 asyncio
 websockets
 functools
+glob
