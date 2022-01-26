@@ -1,0 +1,15 @@
+# General
+configparser
+os
+time
+
+# Client script
+configparser
+pyautogui
+datetime
+websocket
+
+# Server script
+asyncio
+websockets
+functools
