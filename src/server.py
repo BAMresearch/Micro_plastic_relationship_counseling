@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import asyncio
-from xmlrpc.client import Server
 import websockets
 import configparser
 import os
@@ -21,13 +20,14 @@ class ServerData:
         self.port = int(config['IP']['port'])
 
         # Name of the log file
+        self.log_file_path = config['LOG_FILE']['log_file_path']
         self.log_file_name = config['LOG_FILE']['log_file_name']
 
         # Trigger words that are used to determine whether an error has occured
         self.triggers = config.get('TRIGGER_WORDS', 'triggers').split(',')
 
         # Delay between server cycles in seconds
-        self.delay = config['DELAY_TIME']['delay']
+        self.delay = int(config['DELAY_TIME']['delay'])
 
 
 def errors_in_log_file(server_data: ServerData):
@@ -40,7 +40,7 @@ def errors_in_log_file(server_data: ServerData):
 
     # Open the log file and create a list that contains all lines as strings
     file_path = os.path.abspath('')
-    with open(file_path + "../Testing/20220121-1443-3-TGATDU_error_simulation.log", "r") as f:
+    with open(file_path + f"{server_data.log_file_path}/{server_data.log_file_name}", "r") as f:
         lines = f.readlines()
     
     # Search all lines for errors
@@ -54,12 +54,12 @@ def errors_in_log_file(server_data: ServerData):
     return False
 
 
-async def serve(websocket, path, server_data):
+async def serve(websocket, path, server_data: ServerData):
     """Runs an async loop of server side tasks."""
 
     async for received_message in websocket:
         # Shut down the script if the client has acknowledged that it has received the error message 
-        if received_message == "STATUS CLIENT: Error successfully detected!":
+        if received_message == "STATUS CLIENT: Error detected!":
             asyncio.get_event_loop().stop()
         
         # Check for error(s) in log file
@@ -85,7 +85,7 @@ def main():
     server_data = ServerData()
 
     # Start the server
-    start_server = websockets.serve(functools.partial(serve, server_data=server_data), host=server_data.ip_address, port=server_data.port)
+    start_server = websockets.serve(functools.partial(serve, path="Whatever", server_data=server_data), host=server_data.ip_address, port=server_data.port)
 
     # Run the server in an asyncio loop
     asyncio.get_event_loop().run_until_complete(start_server)
