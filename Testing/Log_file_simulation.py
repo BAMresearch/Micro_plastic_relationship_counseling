@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import random
 import time
 
@@ -19,7 +21,7 @@ for _ in range(100):
         
         rnd_num_error = random.random()
 
-        if rnd_num_error < 0.1:
+        if rnd_num_error < 0.05:
             rnd_num_message = random.randint(0, len(error_log_messages) - 1)
             f.write(error_log_messages[rnd_num_message])
         else:
@@ -28,4 +30,4 @@ for _ in range(100):
         
         f.write("\n")
     
-    time.sleep(0.5)
+    time.sleep(1.)
