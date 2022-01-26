@@ -5,6 +5,7 @@ import pyautogui
 import time
 import datetime
 import websocket
+import os
 
 class ClientData:
 
@@ -19,10 +20,10 @@ class ClientData:
         self.port = config['IP']['port']
 
         # Positions for reset button and the reset confirmation button
-        self.reset_x_pos = config['RESET_POSITION']['reset_x_pos']
-        self.reset_y_pos = config['RESET_POSITION']['reset_y_pos']
-        self.confirm_reset_x_pos = config['CONFIRM_RESET_POSITION']['confirm_reset_x_pos']
-        self.confirm_reset_y_pos = config['CONFIRM_RESET_POSITION']['confirm_reset_y_pos']
+        self.reset_x_pos = int(config['RESET_POSITION']['reset_x_pos'])
+        self.reset_y_pos = int(config['RESET_POSITION']['reset_y_pos'])
+        self.confirm_reset_x_pos = int(config['CONFIRM_RESET_POSITION']['confirm_reset_x_pos'])
+        self.confirm_reset_y_pos = int(config['CONFIRM_RESET_POSITION']['confirm_reset_y_pos'])
 
 class UserWebsocketEngine:
     """Sets up websocket to talk to the server."""
@@ -36,15 +37,17 @@ class UserWebsocketEngine:
         def on_message(ws, message):
             """Function that processes all incoming messages except for error messages."""
             if message == "STATUS SERVER: Error detected":
+                print("Resetting the program.")
                 # Click the reset button
                 pyautogui.click(self.client_data.reset_x_pos, self.client_data.reset_y_pos)
                 
                 # Wait a little and then press the reset confirmation button
                 time.sleep(2)
+                print("Confirming the program's reset.")
                 pyautogui.click(self.client_data.confirm_reset_x_pos, self.client_data.confirm_reset_y_pos)
 
                 # Send the server an acknolegement about the error message
-                ws.send("STATUS CLIENT: Error successfully detected!")
+                ws.send("STATUS CLIENT: Error detected!")
                 ws.close()
             else:
                 ws.send("STATUS CLIENT: Ok")
@@ -90,6 +93,9 @@ def stay_connected(client_data: ClientData):
 
 def main():
     """Initializes and runs the client."""
+    # Change working directory to file path
+    os.chdir(os.path.dirname(os.path.realpath(__file__)))
+
     # Initialize the client data
     client_data = ClientData()
 
