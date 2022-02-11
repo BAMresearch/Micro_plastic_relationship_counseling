@@ -33,7 +33,7 @@ class ClientData:
         self.client_shutdown_delay_mins = float(config['DELAY_TIME']['client_shutdown_delay_mins'])
 
 
-class UserWebsocketEngine:
+class Websocket:
     """Sets up websocket to talk to the server."""
 
     def __init__(self, client_data: ClientData):
@@ -100,7 +100,7 @@ def stay_connected(client_data: ClientData):
     """
     try:
         while True:
-            UserWebsocketEngine(client_data)
+            Websocket(client_data)
             time.sleep(1)
 
     except KeyboardInterrupt:
