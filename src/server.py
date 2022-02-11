@@ -91,7 +91,7 @@ async def serve(websocket, path, server_data: ServerData):
 
 
 def main():
-    """Initializes and runs the server."""
+    """Main method. Initializes and runs the server."""
     # Initialize the server data
     server_data = ServerData('server', log_file_automatic=True)
 
