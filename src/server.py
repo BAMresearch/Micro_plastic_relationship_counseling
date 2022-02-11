@@ -7,11 +7,15 @@ import os
 import time
 import functools
 import glob
+from log import Log
 
 class ServerData:
 
-    def __init__(self, log_file_automatic=True):
+    def __init__(self, log_name: str, log_file_automatic=True):
         """Initializes the server data."""
+        # Set up logger
+        self.log = Log(log_name)
+
         # Set up the ConfigParser. Used to read all the server data from the config.ini file
         config = configparser.ConfigParser()
         config.read('../config/config.ini')
@@ -27,15 +31,15 @@ class ServerData:
                 log_files = glob.glob(f"{self.log_file_path}/*.log")
                 self.log_file_name = os.path.basename(max(log_files, key=os.path.getctime))
             except ValueError:
-                print("No log file found in the specified directory.")
+                self.log.logger.debug("No log file found in the specified directory.")
         else: # Use the log file specified in the config.ini file
             self.log_file_name = config['LOG_FILE']['log_file_name']
 
         # Trigger words that are used to determine whether an error has occured
         self.triggers = config.get('TRIGGER_WORDS', 'triggers').split(',')
 
-        # Delay between server cycles in seconds
-        self.delay = int(config['DELAY_TIME']['delay'])
+        # Delay between server loop iterations in seconds
+        self.server_repeat_delay_secs = int(config['DELAY_TIME']['server_repeat_delay_secs'])
 
 
 def errors_in_log_file(server_data: ServerData):
@@ -54,8 +58,8 @@ def errors_in_log_file(server_data: ServerData):
     for line in lines:
         for trigger in server_data.triggers:
             if trigger in line:
-                print('Found an error: ')
-                print(line)
+                server_data.log.logger.debug('Found an error: ')
+                server_data.log.logger.debug(line)
                 return True
     
     return False
@@ -83,13 +87,13 @@ async def serve(websocket, path, server_data: ServerData):
         await websocket.send(response_message)
 
         # Wait some time before repeating the cycle
-        time.sleep(server_data.delay)
+        time.sleep(server_data.server_repeat_delay_secs)
 
 
 def main():
     """Initializes and runs the server."""
     # Initialize the server data
-    server_data = ServerData(log_file_automatic=True)
+    server_data = ServerData('server', log_file_automatic=True)
 
     # Start the server
     start_server = websockets.serve(functools.partial(serve, path="Whatever", server_data=server_data), host=server_data.ip_address, port=server_data.port)
