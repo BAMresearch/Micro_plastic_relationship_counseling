@@ -2,8 +2,11 @@
 
 import random
 import time
+from datetime import datetime
 
-log_file_name = "20220121-1443-3-TGATDU_error_simulation.log"
+current_date = f"{datetime.today().year}{datetime.today().strftime('%m')}{datetime.today().strftime('%d')}"
+
+log_file_name = f"{current_date}-1443-3-TGATDU_error_simulation.log"
 
 normal_log_messages =   ["Moving motor Motor Z relative -2.0mm",\
                         "Moving to TDUP:1",\
