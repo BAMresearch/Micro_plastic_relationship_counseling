@@ -1,0 +1,7 @@
+# File types
+*.txt
+*.log
+*.ini
+
+# Directories
+src/__pycache__/*
