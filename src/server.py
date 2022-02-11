@@ -8,6 +8,7 @@ import time
 import functools
 import glob
 from log import Log
+from datetime import datetime
 
 class ServerData:
 
@@ -28,7 +29,8 @@ class ServerData:
         self.log_file_path = config['LOG_FILE']['log_file_path']
         if log_file_automatic: # Automatically find and use the latest log file created in this directory
             try:
-                log_files = glob.glob(f"{self.log_file_path}/*.log")
+                current_date = f"{datetime.today().year}{datetime.today().strftime('%m')}{datetime.today().strftime('%d')}"
+                log_files = glob.glob(f"{self.log_file_path}/{current_date}*.log")
                 self.log_file_name = os.path.basename(max(log_files, key=os.path.getctime))
             except ValueError:
                 self.log.logger.debug("No log file found in the specified directory.")
@@ -92,6 +94,9 @@ async def serve(websocket, path, server_data: ServerData):
 
 def main():
     """Main method. Initializes and runs the server."""
+    # Change working directory to file path
+    os.chdir(os.path.dirname(os.path.realpath(__file__)))
+
     # Initialize the server data
     server_data = ServerData('server', log_file_automatic=True)
 
